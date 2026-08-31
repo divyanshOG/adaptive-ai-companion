@@ -71,7 +71,9 @@
         </ul>
     </div>
 
-    <a href="/" class="btn btn-outline-secondary">Log New Stats (Reset)</a>
+    <form action="{{ url_for('reset_checkin') }}" method="POST" class="d-inline">
+        <button type="submit" class="btn btn-outline-secondary">Log New Stats (Reset)</button>
+    </form>
     {% endif %}
 </div>
 
