@@ -146,11 +146,13 @@ def submit_checkin():
 @app.route('/reset', methods=['POST'])
 def reset_checkin():
     """Remove today's check-in so the dashboard shows the form again."""
-    today_date = datetime.utcnow().date()
-    today_log = DailyLog.query.filter_by(date=today_date).first()
-    if today_log:
-        db.session.delete(today_log)
-        db.session.commit()
+    with app.app_context():
+        db.create_all()
+        today_date = datetime.utcnow().date()
+        today_log = DailyLog.query.filter_by(date=today_date).first()
+        if today_log:
+            db.session.delete(today_log)
+            db.session.commit()
 
     return redirect(url_for('dashboard'))
 
