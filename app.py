@@ -3,6 +3,8 @@ from models.user_log import db, MasterCatalog, MySyllabus, DailyLog
 import joblib
 import os
 import pandas as pd
+import threading
+import webbrowser
 from datetime import datetime
 
 app = Flask(__name__)
@@ -141,6 +143,20 @@ def submit_checkin():
     return redirect(url_for('dashboard'))
 
 
+@app.route('/reset', methods=['POST'])
+def reset_checkin():
+    """Remove today's check-in so the dashboard shows the form again."""
+    with app.app_context():
+        db.create_all()
+        today_date = datetime.utcnow().date()
+        today_log = DailyLog.query.filter_by(date=today_date).first()
+        if today_log:
+            db.session.delete(today_log)
+            db.session.commit()
+
+    return redirect(url_for('dashboard'))
+
+
 @app.route('/onboarding', methods=['GET', 'POST'])
 def onboarding():
     if request.method == 'POST':
@@ -195,4 +211,10 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all() 
         print("⚙️ SQLite storage schema verified and online.")
+
+    # Open the dashboard once the Flask development server is ready. The
+    # reloader starts a second process, so only the serving process opens it.
+    if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+        threading.Timer(1.0, lambda: webbrowser.open_new('http://127.0.0.1:5000/')).start()
+
     app.run(debug=True)
